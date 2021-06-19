@@ -1,66 +1,93 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <string.h>
+#include <stdlib.h>
 #include <SoftwareSerial.h>
 
 Adafruit_SSD1306 display(-1);
 
-String a; // Global Variable to store the incoming text message
-
+//String a = "This is a very long message so I am going to extend this to a level"; //where the text needs to keep scrolling and scrolling and scrolling till I stop texting which is never going to happen anytime sooon";
+int* b = (int*)calloc(50,sizeof(int));
+int count = 0;
+String a;
 void setup()
 {
   Serial.begin(9600); // Initialize the serial monitor
   // initialize with the I2C addr 0x3C
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Initialize the Display with its I2C address
-
-  
   display.clearDisplay(); // Clear the buffer.
-
-
   display.setTextSize(1); // Set the text size 1
   display.setTextColor(WHITE); // Set the text color to white
   display.setCursor(0, 0); // Cursor is set to the co-ordinates (0,0)
 }
 
 void loop() {
+  while(Serial.available() == 0);
+  a = Serial.readString();
+  int c = countWords(a);
+  int line = 0;
+  int space = 20;
+  int j = 0; //for printing the string
   display.clearDisplay(); //Clear the display buffer
   display.setTextSize(1); // Set the text size 1
   display.setTextColor(WHITE); // Set the text color to white
   display.setCursor(0, 0); // Cursor is set to the co-ordinates (0,0)
-  display.print("Enter Text"); // Load the display buffer with the text "Enter the Text"
-  display.display(); // display what is in the display buffer
-  
-  while(Serial.available() == 0); // wait for serial monitor to give a text input
-  a = Serial.readString(); // store the data coming from the serial monitor in the initialized string.
-  int b = a.length(); // calculate the length of the string (Number of characters in the string)
-  int c = (ceil(b/20)-4)*8; // number of times the screen has to scroll down the pixel. Supposed to be (ceil(b/20)-4)*16) but that was also being to long so it was decreased to 8
-  //Serial.println(a.length());
-  //Serial.println(c);
-  
-  if (a.length() >= 80) // scrolling will happen only if the number of characters in the string is greater than or equal to 80 since the screen cant accomodate more than that
+  display.setTextWrap(true);
+  for(int i = 0;i < c;i++)
   {
-    for(int j = 0; j >-1*c;j--)
+    if(b[i] > space)
     {
-      display.clearDisplay();
-      display.setCursor(0,j); // send the text up by one row (essentially decreasing the value of the y coordinate of the display
-      display.setTextSize(1);
-      display.setTextWrap(true); // Set text wrapping to true to make sure no character is being cut off.
-      display.print(a);
-      display.display();
-      //Serial.println(j);
-      delay(500);    
+      //display.print("\n");
+      space = 20;
+      line += 8 ;
+      display.setCursor(0,line);
+      while(a[j] != 32)
+      {
+        display.print(a[j]);
+        j++;
+      }
+      space -= (b[i] + 1);
+    }
+    else
+    {
+      space -= (b[i]+1);
+      while(a[j] != 32)
+      {
+        display.print(a[j]);
+        j++;
+      }
+    }
+    display.print(" ");
+    j++;
+  }
+  display.display();
+
+  
+//  for(int i = 0;i < c;i++)
+//  {
+//    Serial.print(b[i]);
+//    Serial.print(" ");
+//  }
+//  Serial.println(" ");
+  delay(1000);
+}
+
+int countWords(String a)
+{
+  int index = 0;
+  for (int i = 0; i < a.length(); i++)
+  {
+    if (a[i] != 32)
+      count++;
+    else
+    {
+      b[index] = count;
+      index++;
+      count = 0;
     }
   }
-  else
-  {
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.setTextSize(1);
-    display.setTextWrap(true);
-    display.print(a);
-    display.display();
-    delay(1000);
-  } 
-  delay(5000);
+  b[index] = count;
+  index++;
+  count = 0;
+  return index;
 }
