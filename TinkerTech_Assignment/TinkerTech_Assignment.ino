@@ -7,7 +7,7 @@
 Adafruit_SSD1306 display(-1);
 
 //String a = "This is a very long message so I am going to extend this to a level"; //where the text needs to keep scrolling and scrolling and scrolling till I stop texting which is never going to happen anytime sooon";
-int* b = (int*)calloc(50,sizeof(int));
+int* b = (int*)calloc(100,sizeof(int));
 int count = 0;
 String a;
 void setup()
@@ -28,19 +28,22 @@ void loop() {
   int line = 0;
   int space = 20;
   int j = 0; //for printing the string
+  int lines = countOfWords(c);
   display.clearDisplay(); //Clear the display buffer
   display.setTextSize(1); // Set the text size 1
   display.setTextColor(WHITE); // Set the text color to white
   display.setCursor(0, 0); // Cursor is set to the co-ordinates (0,0)
   display.setTextWrap(true);
+  int P = 0;
+  while(P > -8*lines)
+  {
   for(int i = 0;i < c;i++)
   {
     if(b[i] > space)
     {
-      //display.print("\n");
+      display.print("\n");
       space = 20;
       line += 8 ;
-      display.setCursor(0,line);
       while(a[j] != 32)
       {
         display.print(a[j]);
@@ -60,16 +63,15 @@ void loop() {
     display.print(" ");
     j++;
   }
-  display.display();
-
-  
-//  for(int i = 0;i < c;i++)
-//  {
-//    Serial.print(b[i]);
-//    Serial.print(" ");
-//  }
-//  Serial.println(" ");
-  delay(1000);
+    display.display();
+    
+    display.setTextWrap(true);
+    display.setCursor(0,P);
+    display.clearDisplay();
+    
+    P -= 8;
+  //delay(500);
+  }
 }
 
 int countWords(String a)
@@ -90,4 +92,24 @@ int countWords(String a)
   index++;
   count = 0;
   return index;
+}
+
+int countOfWords(int c)
+{
+  int width = 20;
+  int Lines = 1;
+  for(int i=0;i<c;i++)
+  {
+    if(b[i] > width)
+    {
+      width = 20;
+      Lines++;
+      width -= (b[i] + 1);      
+    }
+    else
+    {
+      width -= (b[i] + 1);
+    }
+  }
+  return Lines;
 }
