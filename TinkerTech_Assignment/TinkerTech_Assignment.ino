@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <SoftwareSerial.h>
 
+SoftwareSerial bluetooth(10,11); //Tx Rx
 Adafruit_SSD1306 display(-1);
 
 //String a = "This is a very long message so I am going to extend this to a level"; //where the text needs to keep scrolling and scrolling and scrolling till I stop texting which is never going to happen anytime sooon";
@@ -12,7 +13,8 @@ int count = 0;
 String a;
 void setup()
 {
-  Serial.begin(9600); // Initialize the serial monitor
+  bluetooth.begin(9600); // Initialize the SoftwareSerial
+  Serial.begin(9600);
   // initialize with the I2C addr 0x3C
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Initialize the Display with its I2C address
   display.clearDisplay(); // Clear the buffer.
@@ -22,8 +24,9 @@ void setup()
 }
 
 void loop() {
-  while(Serial.available() == 0);
-  a = Serial.readString();
+  while(blutooth.available() == 0);
+  a = bluetooth.readString();
+  Serial.println(a);
   int c = countWords(a);
   int line = 0;
   int space = 20;
