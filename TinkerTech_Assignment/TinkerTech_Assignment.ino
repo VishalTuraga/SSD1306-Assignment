@@ -1,3 +1,7 @@
+/* Input is being taken from an android device using HC-05 Bluetooth module.
+Text wrapping has been implemented successfully.
+Issues in scrolling and is yet to be debugged
+*/ 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
