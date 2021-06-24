@@ -24,7 +24,7 @@ void setup()
 }
 
 void loop() {
-  while(blutooth.available() == 0);
+  while(bluetooth.available() == 0);
   a = bluetooth.readString();
   Serial.println(a);
   int c = countWords(a);
