@@ -115,4 +115,4 @@ int countOfWords(int c)
     }
   }
   return Lines;
-}
+} 
