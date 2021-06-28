@@ -1,24 +1,18 @@
-/* Input is being taken from an android device using HC-05 Bluetooth module.
-Text wrapping has been implemented successfully.
-Issues in scrolling and is yet to be debugged
-*/ 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <stdlib.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial bluetooth(10,11); //Tx Rx
+SoftwareSerial bluetooth(10,11);
 Adafruit_SSD1306 display(-1);
 
-//String a = "This is a very long message so I am going to extend this to a level"; //where the text needs to keep scrolling and scrolling and scrolling till I stop texting which is never going to happen anytime sooon";
-int* b = (int*)calloc(100,sizeof(int));
+int* b = (int*)calloc(50,sizeof(int)); // stores the length of all words present in a text
 int count = 0;
 String a;
 void setup()
 {
-  bluetooth.begin(9600); // Initialize the SoftwareSerial
-  Serial.begin(9600);
+  bluetooth.begin(9600); // Initialize the serial monitor
   // initialize with the I2C addr 0x3C
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Initialize the Display with its I2C address
   display.clearDisplay(); // Clear the buffer.
@@ -28,29 +22,38 @@ void setup()
 }
 
 void loop() {
+  display.clearDisplay(); // Clear the buffer.
+  display.setTextSize(1); // Set the text size 1
+  display.setTextColor(WHITE); // Set the text color to white
+  display.setCursor(0,0);
+  display.print("Enter Text");
+  display.display();
   while(bluetooth.available() == 0);
-  a = bluetooth.readString();
-  Serial.println(a);
-  int c = countWords(a);
-  int line = 0;
-  int space = 20;
+  display.clearDisplay();
+  a = bluetooth.readString(); // store the input from bluetooth device in a variable
+  int c = countWords(a); // Total number of words present in the input text.
+  int line = 0; // To know which line the word being printed in in
+  int space = 20; // To know how many characters can the present line accomodate
   int j = 0; //for printing the string
-  int lines = countOfWords(c);
   display.clearDisplay(); //Clear the display buffer
   display.setTextSize(1); // Set the text size 1
   display.setTextColor(WHITE); // Set the text color to white
   display.setCursor(0, 0); // Cursor is set to the co-ordinates (0,0)
   display.setTextWrap(true);
-  int P = 0;
-  while(P > -8*lines)
-  {
   for(int i = 0;i < c;i++)
   {
-    if(b[i] > space)
+    if (line >= 32){ // if the text has more than four lines, refresh the screen and print the remaining text
+      delay(500);
+      display.clearDisplay();
+      display.setCursor(0,0);
+      line = 0;
+    }
+    if(b[i] > space) // if the length of the current word is more than the available space on the current line, move to the next line
     {
-      display.print("\n");
+      //display.print("\n");
       space = 20;
       line += 8 ;
+      display.setCursor(0,line);
       while(a[j] != 32)
       {
         display.print(a[j]);
@@ -69,16 +72,9 @@ void loop() {
     }
     display.print(" ");
     j++;
+    display.display();  
   }
-    display.display();
-    
-    display.setTextWrap(true);
-    display.setCursor(0,P);
-    display.clearDisplay();
-    
-    P -= 8;
-  //delay(500);
-  }
+  delay(5000);
 }
 
 int countWords(String a)
@@ -100,23 +96,3 @@ int countWords(String a)
   count = 0;
   return index;
 }
-
-int countOfWords(int c)
-{
-  int width = 20;
-  int Lines = 1;
-  for(int i=0;i<c;i++)
-  {
-    if(b[i] > width)
-    {
-      width = 20;
-      Lines++;
-      width -= (b[i] + 1);      
-    }
-    else
-    {
-      width -= (b[i] + 1);
-    }
-  }
-  return Lines;
-} 
